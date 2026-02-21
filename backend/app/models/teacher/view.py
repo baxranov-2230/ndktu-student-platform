@@ -28,10 +28,10 @@ class TeacherView(ModelView, model=Teacher):
 
     column_editable_list = ("name",)
 
-    column_sortable_list = (
-        "id",
-        "name",
-    )
+    # column_sortable_list = (
+    #     "id",
+    #     "name",
+    # )
 
     column_default_sort = (
         "id",

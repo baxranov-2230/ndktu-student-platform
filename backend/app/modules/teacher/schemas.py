@@ -9,25 +9,30 @@ class TeacherKafedraInfo(BaseModel):
     faculty_id: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
+
 class TeacherGroupInfo(BaseModel):
     id: int
     name: str
     model_config = ConfigDict(from_attributes=True)
+
 
 class TeacherUserGroupTeacherInfo(BaseModel):
     group_id: int
     group: TeacherGroupInfo
     model_config = ConfigDict(from_attributes=True)
 
+
 class TeacherSubjectInfo(BaseModel):
     id: int
     name: str
     model_config = ConfigDict(from_attributes=True)
 
+
 class TeacherSubjectTeacherInfo(BaseModel):
     subject_id: int
     subject: TeacherSubjectInfo
     model_config = ConfigDict(from_attributes=True)
+
 
 class TeacherUserInfo(BaseModel):
     id: int
@@ -59,7 +64,7 @@ class TeacherCreateResponse(BaseModel):
     third_name: str
     full_name: str
     kafedra_id: int
-    created_at: datetime  
+    created_at: datetime
     updated_at: datetime
 
     kafedra: Optional[TeacherKafedraInfo] = None
@@ -70,13 +75,14 @@ class TeacherCreateResponse(BaseModel):
         from_attributes=True,
     )
 
+
 class TeacherListRequest(BaseModel):
-    full_name: Optional[str] = None 
+    full_name: Optional[str] = None
     kafedra_id: Optional[int] = None
-    
-    page: int = 1 
-    
-    limit: int = 10 
+
+    page: int = 1
+
+    limit: int = 10
 
     @property
     def offset(self) -> int:
@@ -84,15 +90,18 @@ class TeacherListRequest(BaseModel):
             return 0
         return (self.page - 1) * self.limit
 
+
 class TeacherListResponse(BaseModel):
     total: int
     page: int
     limit: int
     teachers: list[TeacherCreateResponse]
 
+
 class TeacherGroupAssignRequest(BaseModel):
     user_id: int
     group_ids: list[int]
+
 
 class TeacherSubjectAssignRequest(BaseModel):
     teacher_id: int

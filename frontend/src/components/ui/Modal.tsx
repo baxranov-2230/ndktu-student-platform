@@ -14,10 +14,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md duration-300 animate-in fade-in">
             <div
                 className={cn(
-                    "relative w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg duration-200 animate-in fade-in zoom-in-95",
+                    "relative w-full max-w-lg rounded-2xl border border-border/50 bg-background p-6 shadow-soft-hover duration-300 animate-in fade-in zoom-in-95 ease-out",
                     className
                 )}
             >

@@ -69,11 +69,19 @@ docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -c \
 echo "🏷️  Stamping database with current migration head..."
 
 # 1. Update the path to point to 'backend/app' where alembic.ini is located
-ALEMBIC_DIR="$(dirname "$SCRIPT_DIR")/backend/app"
+BACKEND_DIR="$(dirname "$SCRIPT_DIR")/backend"
+ALEMBIC_DIR="$BACKEND_DIR/app"
 
 if [ -d "$ALEMBIC_DIR" ]; then
+    echo "📂 Checking for .venv in backend..."
+    if [ ! -d "$BACKEND_DIR/.venv" ]; then
+        echo "⚠️ .venv not found. Running start.sh to create and sync..."
+        (cd "$BACKEND_DIR" && bash start.sh)
+    fi
+
     echo "📂 Changing directory to: $ALEMBIC_DIR"
     cd "$ALEMBIC_DIR"
+    source "$BACKEND_DIR/.venv/bin/activate"
     
     # 2. OVERRIDE the database URL to use localhost just for this command
     #    (Keep your .env file as 'database:5432' for Docker)

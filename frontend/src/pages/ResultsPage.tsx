@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Pagination } from '@/components/ui/Pagination';
 import { useResults } from '@/hooks/useResults';
 import {
@@ -11,7 +11,8 @@ import {
     TableRow,
 } from '@/components/ui/Table';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Loader2, FileText, FilterX } from 'lucide-react';
+import { FileText, FilterX } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { Combobox } from '@/components/ui/Combobox';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -30,11 +31,18 @@ const ResultsPage = () => {
 
     const isStudent = user?.roles?.some(role => role.name.toLowerCase() === 'student');
     const isTeacher = user?.roles?.some(role => role.name.toLowerCase() === 'teacher');
-    
-    const userId = isStudent ? user?.id : undefined;
-    const teacherId = isTeacher ? user?.teacher?.id : undefined;
 
-    const [selectedGroup, setSelectedGroup] = useState<string>('');
+    // Only students should strictly filter the results list by their own ID
+    const userId = isStudent ? user?.id : undefined;
+    // However, some select fields specifically request groups/subjects/quizzes assigned to the teacher explicitly using teacherId 
+    const teacherId = isTeacher ? user?.id : undefined;
+    const location = useLocation();
+
+    // Check for group_id in URL params (e.g. "?group_id=12")
+    const searchParams = new URLSearchParams(location.search);
+    const urlGroupId = searchParams.get('group_id') || '';
+
+    const [selectedGroup, setSelectedGroup] = useState<string>(urlGroupId);
     const [selectedSubject, setSelectedSubject] = useState<string>('');
     const [selectedQuiz, setSelectedQuiz] = useState<string>('');
     const [selectedGrade, setSelectedGrade] = useState<string>('');
@@ -50,7 +58,7 @@ const ResultsPage = () => {
 
     const { data: groupsData } = useGroups(1, 100, '', teacherId);
     const { data: subjectsData } = useSubjects(1, 100, '', teacherId);
-    const { data: quizzesData } = useQuizzes(1, 100);
+    const { data: quizzesData } = useQuizzes(1, 100, '', undefined, teacherId);
 
     const groupOptions = groupsData?.groups.map(g => ({ value: String(g.id), label: g.name })) || [];
     const subjectOptions = subjectsData?.subjects.map(s => ({ value: String(s.id), label: s.name })) || [];
@@ -132,8 +140,12 @@ const ResultsPage = () => {
             <Card>
                 <CardContent>
                     {isResultsLoading ? (
-                        <div className="flex justify-center p-8">
-                            <Loader2 className="h-8 w-8 animate-spin" />
+                        <div className="space-y-4">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
                         </div>
                     ) : results.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">

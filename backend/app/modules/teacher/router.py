@@ -4,6 +4,7 @@ from core.db_helper import db_helper
 from dependence.role_checker import PermissionRequired
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
 # from fastapi_cache.decorator import cache
 from fastapi_limiter.depends import RateLimiter
 
@@ -15,7 +16,9 @@ from .schemas import (
     TeacherListResponse,
     TeacherGroupAssignRequest,
     TeacherSubjectAssignRequest,
+    TeacherGroupInfo,
 )
+
 # from app.core.cache import clear_cache, custom_key_builder
 
 logger = logging.getLogger(__name__)
@@ -27,10 +30,10 @@ router = APIRouter(
 
 
 @router.post(
-    "/", 
-    response_model=TeacherCreateResponse, 
+    "/",
+    response_model=TeacherCreateResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(RateLimiter(times=5, seconds=60))]
+    dependencies=[Depends(RateLimiter(times=5, seconds=60))],
 )
 async def create_teacher(
     data: TeacherCreateRequest,
@@ -61,12 +64,14 @@ async def list_teachers(
     session: AsyncSession = Depends(db_helper.session_getter),
     _: PermissionRequired = Depends(PermissionRequired("read:teacher")),
 ):
-    return await get_teacher_repository.list_teachers(
-        session=session, request=data
-    )
+    return await get_teacher_repository.list_teachers(session=session, request=data)
 
 
-@router.put("/{teacher_id}", response_model=TeacherCreateResponse, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+@router.put(
+    "/{teacher_id}",
+    response_model=TeacherCreateResponse,
+    dependencies=[Depends(RateLimiter(times=5, seconds=60))],
+)
 async def update_teacher(
     teacher_id: int,
     data: TeacherCreateRequest,
@@ -81,19 +86,26 @@ async def update_teacher(
     return result
 
 
-@router.delete("/{teacher_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+@router.delete(
+    "/{teacher_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(RateLimiter(times=5, seconds=60))],
+)
 async def delete_teacher(
     teacher_id: int,
     session: AsyncSession = Depends(db_helper.session_getter),
     _: PermissionRequired = Depends(PermissionRequired("delete:teacher")),
 ):
-    await get_teacher_repository.delete_teacher(
-        session=session, teacher_id=teacher_id
-    )
+    await get_teacher_repository.delete_teacher(session=session, teacher_id=teacher_id)
     # await clear_cache(list_teachers)
     # await clear_cache(get_teacher, teacher_id=teacher_id)
 
-@router.post("/assign_groups", status_code=status.HTTP_200_OK, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+
+@router.post(
+    "/assign_groups",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(RateLimiter(times=5, seconds=60))],
+)
 async def assign_groups(
     data: TeacherGroupAssignRequest,
     session: AsyncSession = Depends(db_helper.session_getter),
@@ -102,7 +114,12 @@ async def assign_groups(
     await get_teacher_repository.assign_groups(session=session, data=data)
     return {"message": "Groups assigned successfully"}
 
-@router.post("/assign_subjects", status_code=status.HTTP_200_OK, dependencies=[Depends(RateLimiter(times=5, seconds=60))])
+
+@router.post(
+    "/assign_subjects",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(RateLimiter(times=5, seconds=60))],
+)
 async def assign_subjects(
     data: TeacherSubjectAssignRequest,
     session: AsyncSession = Depends(db_helper.session_getter),
@@ -110,3 +127,14 @@ async def assign_subjects(
 ):
     await get_teacher_repository.assign_subjects(session=session, data=data)
     return {"message": "Subjects assigned successfully"}
+
+
+@router.get("/{user_id}/groups", response_model=list[TeacherGroupInfo])
+async def get_teacher_groups(
+    user_id: int,
+    session: AsyncSession = Depends(db_helper.session_getter),
+    _: PermissionRequired = Depends(PermissionRequired("read:teacher")),
+):
+    return await get_teacher_repository.get_teacher_groups(
+        session=session, user_id=user_id
+    )
